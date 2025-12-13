@@ -40,14 +40,14 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 }
 
-# NAT Gateway (one per public subnet for high availability)
+# NAT Gateway (optimized to one for cost savings)
 resource "aws_eip" "nat" {
-  count = 2
+  count = 1
   vpc   = true
 }
 
 resource "aws_nat_gateway" "main" {
-  count         = 2
+  count         = 1
   allocation_id = aws_eip.nat[count.index].id
   subnet_id     = aws_subnet.public[count.index].id
   depends_on    = [aws_internet_gateway.main]
@@ -75,7 +75,7 @@ resource "aws_route_table" "private" {
 
   route {
     cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.main[count.index].id
+    nat_gateway_id = aws_nat_gateway.main[0].id  # Updated to reference single NAT Gateway
   }
 }
 
@@ -106,13 +106,31 @@ resource "aws_lb_target_group" "backend" {
   vpc_id   = aws_vpc.main.id
 }
 
-resource "aws_lb_listener" "backend" {
+# HTTPS Listener (secure, enterprise-grade)
+resource "aws_lb_listener" "backend_https" {
+  load_balancer_arn = aws_lb.main.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = var.alb_certificate_arn
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend.arn
+  }
+}
+
+# HTTP Redirect Listener (forces HTTPS)
+resource "aws_lb_listener" "backend_http_redirect" {
   load_balancer_arn = aws_lb.main.arn
   port              = "80"
   protocol          = "HTTP"
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.backend.arn
+    type = "redirect"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
   }
 }
 
@@ -123,7 +141,7 @@ resource "aws_db_instance" "postgres" {
   engine_version       = "13"
   instance_class       = "db.t3.micro"
   db_name              = "aiplatformdb"
-  username             = "admin"
+  username             = random_pet.db_user_gen.id  # Updated to use dynamically generated DB user
   password             = random_password.db_password_gen.result  # Updated to use secure reference
   vpc_security_group_ids = [aws_security_group.rds.id]
   db_subnet_group_name = aws_db_subnet_group.main.name
