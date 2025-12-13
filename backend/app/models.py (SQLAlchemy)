@@ -1,0 +1,18 @@
+from sqlalchemy import Column, Integer, String, DateTime, JSON
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
+
+class WorkflowData(Base):
+    __tablename__ = "workflow_data"
+    id = Column(Integer, primary_key=True)
+    source_api = Column(String)
+    data = Column(JSON)  # Normalized data
+    timestamp = Column(DateTime)
+
+class AlertConfig(Base):
+    __tablename__ = "alert_configs"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer)
+    channels = Column(JSON)  # e.g., {"email": "user@example.com", "slack": "#channel"}
+    thresholds = Column(JSON)  # e.g., {"delay_threshold": 24}
