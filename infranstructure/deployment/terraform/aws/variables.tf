@@ -14,12 +14,17 @@ variable "backend_image_uri" {
 
 variable "fargate_cpu" {
   description = "Fargate task CPU capacity (e.g., 256, 512, 1024)."
-  type        = string
-  default     = "1024" # Enterprise default: 1 vCPU
+  type        = number
+  default     = 1024 # Enterprise default: 1 vCPU
 }
 
 variable "fargate_memory" {
   description = "Fargate task memory (e.g., 512, 1024, 2048)."
+  type        = number
+  default     = 2048 # Enterprise default: 2 GB
+}
+
+variable "alb_certificate_arn" {
+  description = "The ARN of a valid AWS Certificate Manager (ACM) certificate for the ALB (e.g., for example.cba.com.au)."
   type        = string
-  default     = "2048" # Enterprise default: 2 GB
 }
