@@ -1,0 +1,40 @@
+import { useState } from 'react';
+import axios from 'axios';
+
+export default function Config() {
+  const [apiConfig, setApiConfig] = useState({ endpoint: '', api_key: '' });
+
+  const saveConfig = () => {
+    // 1. Retrieve the JWT Token
+    const token = localStorage.getItem('jwt_token');
+
+    if (token) {
+      // 2. Set the Authorization header with the token
+      const config = {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      };
+
+      // 3. Make the authenticated POST request
+      axios.post('/api/config', apiConfig, config)  // Pass data, then config
+        .then(res => alert("Configuration saved successfully."))
+        .catch(err => {
+          console.error("Failed to save configuration. Authentication error:", err);
+          alert("Error: Configuration failed to save. Please log in.");
+        });
+    } else {
+        alert("Authentication required to save configuration.");
+    }
+  };
+
+  return (
+    <div>
+      <h1>API Configuration</h1>
+      <input placeholder="Endpoint" onChange={e => setApiConfig({...apiConfig, endpoint: e.target.value})} />
+      <input placeholder="API Key" onChange={e => setApiConfig({...apiConfig, api_key: e.target.value})} />
+      <button onClick={saveConfig}>Save</button>
+    </div>
+  );
+}
+
