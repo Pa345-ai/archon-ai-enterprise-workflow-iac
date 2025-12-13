@@ -1,0 +1,40 @@
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+
+export default function Dashboard() {
+  const [kpis, setKpis] = useState({});
+
+  useEffect(() => {
+    // 1. Retrieve the JWT Token
+    const token = localStorage.getItem('jwt_token');
+
+    if (token) {
+      // 2. Set the Authorization header with the token
+      const config = {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      };
+
+      // 3. Make the authenticated request
+      axios.get('/api/insights/kpis', config)
+        .then(res => setKpis(res.data))
+        .catch(err => {
+          console.error("Authentication failed or data access denied:", err);
+          // Optional: Redirect to login page on 401 error
+        });
+    } else {
+        // Optional: Handle case where token is missing (e.g., redirect to login)
+        console.warn("User is not authenticated. Redirecting or showing error.");
+    }
+  }, []);
+
+  return (
+    <div>
+      <h1>Workflow Insights Dashboard</h1>
+      <div>Total Tasks: {kpis.total_tasks}</div>
+      <div>Delays: {kpis.delays}</div>
+      {/* Add charts using Chart.js or similar */}
+    </div>
+  );
+}
