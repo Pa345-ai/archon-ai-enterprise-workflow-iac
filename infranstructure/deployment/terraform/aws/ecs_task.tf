@@ -16,13 +16,11 @@ resource "aws_ecs_task_definition" "backend" {
           hostPort      = 8000
         }
       ]
-      environment = [
-        {
-          name  = "DB_USER"
-          value = "admin"
-        }
-      ]
       secrets = [
+        {
+          name      = "DB_USER"
+          valueFrom = aws_secretsmanager_secret.db_user.arn
+        },
         {
           name      = "DB_PASSWORD"
           valueFrom = aws_secretsmanager_secret.db_password.arn
