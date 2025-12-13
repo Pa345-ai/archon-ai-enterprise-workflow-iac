@@ -2,8 +2,8 @@ resource "aws_ecs_task_definition" "backend" {
   family                   = "backend-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "1024"  # Increased for enterprise-grade
-  memory                   = "2048"  # Increased for enterprise-grade
+  cpu                      = var.fargate_cpu  # Updated to use variable
+  memory                   = var.fargate_memory  # Updated to use variable
   execution_role_arn       = aws_iam_role.ecs_execution_role.arn  # Assume defined elsewhere
 
   container_definitions = jsonencode([
@@ -18,22 +18,22 @@ resource "aws_ecs_task_definition" "backend" {
       ]
       environment = [
         {
-          name  = "DB_HOST"
-          value = aws_db_instance.postgres.address
-        },
-        {
           name  = "DB_USER"
           value = "admin"
-        },
-        {
-          name  = "DB_NAME"
-          value = "aiplatformdb"
         }
       ]
       secrets = [
         {
           name      = "DB_PASSWORD"
           valueFrom = aws_secretsmanager_secret.db_password.arn
+        },
+        {
+          name      = "DB_HOST"
+          valueFrom = aws_secretsmanager_secret.db_host.arn
+        },
+        {
+          name      = "DB_NAME"
+          valueFrom = aws_secretsmanager_secret.db_name.arn
         },
         {
           name      = "JWT_SECRET"
