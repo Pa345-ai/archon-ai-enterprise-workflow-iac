@@ -1,3 +1,4 @@
+
 # Security Group for ALB
 resource "aws_security_group" "alb" {
   name   = "alb-sg"
@@ -8,13 +9,6 @@ resource "aws_security_group" "alb" {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]  # Allow HTTP from anywhere
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -31,10 +25,17 @@ resource "aws_security_group" "ecs" {
   }
 
   egress {
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.rds.id]  # To RDS on PostgreSQL port
+  }
+
+  egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"]  # For internet access via NAT Gateway
   }
 }
 
@@ -48,12 +49,5 @@ resource "aws_security_group" "rds" {
     to_port         = 5432
     protocol        = "tcp"
     security_groups = [aws_security_group.ecs.id]  # Only from ECS
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
   }
 }
