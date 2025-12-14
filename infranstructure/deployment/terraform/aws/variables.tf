@@ -60,6 +60,10 @@ variable "application_name" {
   description = "The name of the application for tagging and governance purposes."
   type        = string
   default     = "ARCHON-AI"
+  validation {
+    condition     = length(var.application_name) > 0
+    error_message = "Application name must not be empty for enterprise governance."
+  }
 }
 
 variable "owner" {
@@ -72,7 +76,21 @@ variable "owner" {
 }
 
 variable "cost_center" {
-  description = "The cost center associated with the deployment for financial tracking and governance (optional)."
+  description = "The cost center associated with the deployment for financial tracking and governance."
   type        = string
-  default     = ""
+  validation {
+    condition     = length(var.cost_center) > 0
+    error_message = "CostCenter must not be empty for enterprise governance."
+  }
+}
+
+variable "allowed_ingress_cidrs" {
+  description = "A list of approved CIDR blocks for ingress traffic to the ALB."
+  type        = list(string)
+  validation {
+    condition = alltrue([
+      for cidr in var.allowed_ingress_cidrs : cidr != "0.0.0.0/0"
+    ]) || var.environment == "dev"
+    error_message = "Ingress from '0.0.0.0/0' is not allowed in 'uat' or 'prod' environments."
+  }
 }
