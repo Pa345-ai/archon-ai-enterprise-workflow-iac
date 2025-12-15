@@ -1,0 +1,98 @@
+---
+# tfsec.yml
+
+# Exclude specific rules that are not relevant to this project.
+exclude:
+  - aws-s3-encryption-customer-key # Using aws:kms
+  - aws-iam-no-policy-wildcards # some managed policies have wildcards
+
+# Custom checks to enforce enterprise policies.
+custom_checks:
+  - name: "Mandatory Tags"
+    match:
+      type: "resource"
+      actions: ["create"]
+      match_spec:
+        name: tags
+        action: "is_empty"
+    errorMessage: "All resources must have the following tags: Environment, Application, Owner, CostCenter, DataClassification."
+
+  - name: "Approved Regions"
+    match:
+      type: "provider"
+      actions: ["create"]
+      match_spec:
+        name: "region"
+        action: "not_contains"
+        value: "ap-southeast-2"
+    errorMessage: "Only the ap-southeast-2 region is approved for deployment."
+
+  - name: "No Public Resources"
+    match:
+      type: "resource"
+      actions: ["create"]
+      match_spec:
+        name: "publicly_accessible"
+        action: "equals"
+        value: true
+    errorMessage: "No resources should be publicly accessible."
+
+  - name: "Encryption Required"
+    match:
+      type: "resource"
+      actions: ["create"]
+      match_spec:
+        name: "storage_encrypted"
+        action: "equals"
+        value: false
+    errorMessage: "All storage resources must be encrypted."
+
+  - name: "Verify All Required Tags are Present"
+    match:
+      type: "resource"
+      actions: ["create"]
+      match_spec:
+        name: "tags"
+        action: "not_contains"
+        value: "Environment"
+    errorMessage: "All resources must have the 'Environment' tag."
+
+  - name: "Verify All Required Tags are Present"
+    match:
+      type: "resource"
+      actions: ["create"]
+      match_spec:
+        name: "tags"
+        action: "not_contains"
+        value: "Application"
+    errorMessage: "All resources must have the 'Application' tag."
+
+  - name: "Verify All Required Tags are Present"
+    match:
+      type: "resource"
+      actions: ["create"]
+      match_spec:
+        name: "tags"
+        action: "not_contains"
+        value: "Owner"
+    errorMessage: "All resources must have the 'Owner' tag."
+
+  - name: "Verify All Required Tags are Present"
+    match:
+      type: "resource"
+      actions: ["create"]
+      match_spec:
+        name: "tags"
+        action: "not_contains"
+        value: "CostCenter"
+    errorMessage: "All resources must have the 'CostCenter' tag."
+
+  - name: "Verify All Required Tags are Present"
+    match:
+      type: "resource"
+      actions: ["create"]
+      match_spec:
+        name: "tags"
+        action: "not_contains"
+        value: "DataClassification"
+    errorMessage: "All resources must have the 'DataClassification' tag."

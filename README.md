@@ -1,42 +1,48 @@
-# 🛡️ ARCHON AI: Enterprise AI Workflow Platform (IaC)
+# ARCHON-AI Enterprise-Grade Infrastructure
 
-This repository contains the **Auditable Infrastructure-as-Code (IaC)** for the **ARCHON AI Workflow Platform**—a secure, multi-cloud ready solution designed to accelerate business-critical AI deployments in highly regulated financial environments.
+This repository contains the Infrastructure-as-Code for the ARCHON-AI platform, designed to meet Tier-1 enterprise and regulated-industry standards. The infrastructure is deployed on AWS and managed with Terraform.
 
-## 🎯 Our Value Proposition: Governance, Risk Elimination, and Guaranteed Deployment
+## Architecture Overview
 
-ARCHON AI provides **full control and a guaranteed path to production** for complex, highly compliant AI/ML workloads, eliminating the security and configuration drift risks associated with months of internal platform engineering efforts.
+The architecture is designed to be secure, scalable, and resilient. It follows the principles of least privilege, defense in depth, and infrastructure immutability.
 
-### Key Security & Compliance Features:
+### Key Features
 
-| Feature | Audit Value (Why it matters to CommBank) |
-| :--- | :--- |
-| **Secure Multi-AZ VPC** | Guaranteed High Availability (HA) and resilience across multiple zones, essential for APRA compliance.  |
-| **Zero-Trust Networking** | Strict network segmentation: ECS talks *only* to RDS. The database is completely isolated from the public internet. |
-| **Secrets Management** | Uses native AWS Secrets Manager injection via Fargate. **Zero plain-text secrets** are exposed in logs, config files, or Terraform state files (`.tfstate`). |
-| **Infrastructure-as-Code** | Full immutability and version control via Terraform, providing a verifiable audit trail for every infrastructure change. |
+-   **Environment Isolation:** The infrastructure is deployed into three separate environments: `dev`, `uat`, and `prod`. Each environment has its own dedicated AWS resources, state file, and configuration.
+-   **Modular Design:** The Terraform code is organized into a series of reusable modules, each responsible for a specific component of the architecture (e.g., VPC, RDS, ECS).
+-   **Security:**
+    -   All data is encrypted at rest and in transit.
+    -   Customer-managed KMS keys are used for encryption.
+    -   Secrets are managed in AWS Secrets Manager and automatically rotated.
+    -   IAM roles and policies follow the principle of least privilege.
+    -   The application is protected by AWS WAF.
+-   **Scalability and Resilience:**
+    -   The application is deployed on ECS Fargate with auto-scaling.
+    -   The RDS database is deployed in a Multi-AZ configuration.
+    -   The architecture is deployed across multiple Availability Zones.
 
-## 🏗️ Architecture Overview
+### Diagram
 
-The platform is deployed to **AWS Fargate/ECS** with PostgreSQL persistence in a dedicated, private Multi-AZ RDS instance.
+*A high-level architecture diagram would be placed here.*
 
-* **Front End:** Next.js (Containerized application).
-* **Back End:** FastAPI/Python (Authentication, AI/API aggregation, and Business Logic).
-* **Database:** Multi-AZ PostgreSQL (For state, models, and compliance data).
-* **IaC:** HashiCorp Terraform (Ensuring immediate deployment and configuration governance).
+## Repository Structure
 
-## 🚀 Deployment: The 5-Day Guarantee
+The repository is organized as follows:
 
-The entire secure stack is designed for a single-command deployment, enabling your engineering team to move from code clone to a fully secure, production-ready environment in **under 5 days**.
+-   `/modules`: Contains the reusable Terraform modules.
+-   `/environments`: Contains the environment-specific configurations.
+-   `/backend`: Contains the backend application code.
+-   `/frontend`: Contains the frontend application code.
 
-### Prerequisites
-* AWS CLI and Credentials
-* Terraform CLI
-* Docker (for building/pushing application images)
+## Deployment
 
-### Getting Started
-1.  Initialize Terraform: `terraform init`
-2.  Review Plan: `terraform plan`
-3.  Apply Changes: `terraform apply -auto-approve`
+To deploy the infrastructure, you will need to have Terraform and the AWS CLI installed and configured.
 
----
-*Created by RuwanpuragePawan and ARCHON AI Systems*# archon-ai-enterprise-workflow-iac
+1.  Navigate to the desired environment directory (e.g., `cd environments/dev`).
+2.  Run `terraform init` to initialize the backend.
+3.  Run `terraform plan` to review the changes.
+4.  Run `terraform apply` to deploy the infrastructure.
+
+## Policy-as-Code
+
+This repository uses `tfsec` to enforce security policies. To run the checks locally, install `tfsec` and run `tfsec .` from the root of the repository.
