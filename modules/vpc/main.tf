@@ -5,6 +5,10 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
   enable_dns_hostnames = true
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   tags = merge(var.common_tags, {
     Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-vpc"
   })

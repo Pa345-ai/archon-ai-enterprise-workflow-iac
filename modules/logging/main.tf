@@ -52,6 +52,10 @@ resource "aws_flow_log" "main" {
 resource "aws_s3_bucket" "access_logs" {
   bucket = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-alb-access-logs"
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   tags = merge(var.common_tags, {
     Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-alb-access-logs"
   })

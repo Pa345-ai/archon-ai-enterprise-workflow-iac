@@ -1,98 +1,96 @@
 ---
 # tfsec.yml
 
-# Exclude specific rules that are not relevant to this project.
+# For a full list of checks, see https://aquasecurity.github.io/tfsec/latest/
+#
+# To contribute a new check, see https://aquasecurity.github.io/tfsec/latest/community/checks/
+#
+#
+# tfsec configuration file
+#
+# Min required tfsec version
+min_required_version: v1.28.1
+
+# Exclude some checks to minimize noise
 exclude:
-  - aws-s3-encryption-customer-key # Using aws:kms
-  - aws-iam-no-policy-wildcards # some managed policies have wildcards
+  - aws-iam-no-policy-wildcards # The AWS managed policies for ECS and Flow Logs use wildcards, which is acceptable.
+  - aws-s3-enable-bucket-logging # Bucket logging is not required for the ALB access logs bucket.
 
-# Custom checks to enforce enterprise policies.
+# severity overrides
+severity_overrides:
+  AWS096: "ERROR" # Ensure all EFS filesystems are encrypted.
+  AWS018: "ERROR" # Ensure all IAM policies are attached to a group, user, or role.
+  AWS013: "ERROR" # Ensure all RDS instances have encryption enabled.
+  AWS090: "ERROR" # Ensure all S3 buckets have encryption enabled.
+
+# Custom checks for this project
 custom_checks:
-  - name: "Mandatory Tags"
+  - name: "Ensure prevent_destroy is enabled for critical resources"
+    id: CUS001
     match:
-      type: "resource"
-      actions: ["create"]
-      match_spec:
-        name: tags
-        action: "is_empty"
+      type: resource
+      attributes:
+        lifecycle:
+          prevent_destroy: false
+    errorMessage: "The prevent_destroy lifecycle block must be enabled for critical resources like databases and VPCs."
+    severity: ERROR
+    resource_types:
+      - aws_db_instance
+      - aws_vpc
+      - aws_kms_key
+      - aws_s3_bucket
+  - name: "Mandatory Tags Check"
+    id: CUS002
+    match:
+      type: resource
+      attributes:
+        tags:
+          (Environment|Application|Owner|CostCenter|DataClassification):
+            action: "missing"
     errorMessage: "All resources must have the following tags: Environment, Application, Owner, CostCenter, DataClassification."
-
-  - name: "Approved Regions"
+    severity: "ERROR"
+  - name: "No Public Resources Allowed"
+    id: CUS003
     match:
-      type: "provider"
-      actions: ["create"]
-      match_spec:
-        name: "region"
-        action: "not_contains"
-        value: "ap-southeast-2"
-    errorMessage: "Only the ap-southeast-2 region is approved for deployment."
-
-  - name: "No Public Resources"
+      type: resource
+      attributes:
+        publicly_accessible: true
+    errorMessage: "No resources should be publicly accessible by default. This is a high-risk setting."
+    severity: "ERROR"
+    resource_types:
+      - aws_db_instance
+  - name: "Enforce HTTPS-only traffic on ALB"
+    id: CUS004
     match:
-      type: "resource"
-      actions: ["create"]
-      match_spec:
-        name: "publicly_accessible"
-        action: "equals"
-        value: true
-    errorMessage: "No resources should be publicly accessible."
-
-  - name: "Encryption Required"
+      type: resource
+      attributes:
+        protocol: "HTTP"
+    errorMessage: "ALB listeners must use HTTPS protocol. HTTP is only allowed for redirects."
+    severity: "ERROR"
+    resource_types:
+      - aws_lb_listener
+    ignore:
+      - default_action:
+          - type: "redirect"
+  - name: "Enforce Secure TLS Policy on ALB"
+    id: CUS005
     match:
-      type: "resource"
-      actions: ["create"]
-      match_spec:
-        name: "storage_encrypted"
-        action: "equals"
-        value: false
-    errorMessage: "All storage resources must be encrypted."
-
-  - name: "Verify All Required Tags are Present"
+      type: resource
+      attributes:
+        ssl_policy:
+          action: "not_contains"
+          value: "ELBSecurityPolicy-TLS"
+    errorMessage: "ALB listeners must use a secure TLS policy."
+    severity: "ERROR"
+    resource_types:
+      - aws_lb_listener
+  - name: "Database deletion protection must be enabled"
+    id: CUS006
     match:
-      type: "resource"
-      actions: ["create"]
-      match_spec:
-        name: "tags"
-        action: "not_contains"
-        value: "Environment"
-    errorMessage: "All resources must have the 'Environment' tag."
-
-  - name: "Verify All Required Tags are Present"
-    match:
-      type: "resource"
-      actions: ["create"]
-      match_spec:
-        name: "tags"
-        action: "not_contains"
-        value: "Application"
-    errorMessage: "All resources must have the 'Application' tag."
-
-  - name: "Verify All Required Tags are Present"
-    match:
-      type: "resource"
-      actions: ["create"]
-      match_spec:
-        name: "tags"
-        action: "not_contains"
-        value: "Owner"
-    errorMessage: "All resources must have the 'Owner' tag."
-
-  - name: "Verify All Required Tags are Present"
-    match:
-      type: "resource"
-      actions: ["create"]
-      match_spec:
-        name: "tags"
-        action: "not_contains"
-        value: "CostCenter"
-    errorMessage: "All resources must have the 'CostCenter' tag."
-
-  - name: "Verify All Required Tags are Present"
-    match:
-      type: "resource"
-      actions: ["create"]
-      match_spec:
-        name: "tags"
-        action: "not_contains"
-        value: "DataClassification"
-    errorMessage: "All resources must have the 'DataClassification' tag."
+      type: resource
+      attributes:
+        deletion_protection: false
+    errorMessage: "Deletion protection must be enabled for all RDS instances."
+    severity: "ERROR"
+    resource_types:
+      - aws_db_instance

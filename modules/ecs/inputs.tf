@@ -64,12 +64,14 @@ variable "log_group_name" {
   type        = string
 }
 
-variable "core_task_secret_names" {
-  description = "A list of secret names that the 'core' ECS task needs to access. The module will look up the ARNs of these secrets."
-  type        = list(string)
+variable "core_task_secrets" {
+  description = "A map of environment variable names to Secrets Manager secret ARNs for the 'core' task."
+  type        = map(string)
+  default     = {}
 }
 
-variable "integrations_task_secret_names" {
-  description = "A list of secret names that the 'integrations' ECS task needs to access. The module will look up the ARNs of these secrets."
-  type        = list(string)
+variable "integrations_task_secrets" {
+  description = "A map of environment variable names to Secrets Manager secret ARNs for the 'integrations' task."
+  type        = map(string)
+  default     = {}
 }

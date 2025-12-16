@@ -1,13 +1,3 @@
-data "aws_secretsmanager_secret" "core" {
-  for_each = toset(var.core_task_secret_names)
-  name     = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-${each.key}"
-}
-
-data "aws_secretsmanager_secret" "integrations" {
-  for_each = toset(var.integrations_task_secret_names)
-  name     = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-${each.key}"
-}
-
 resource "aws_ecs_cluster" "main" {
   name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-ecs-cluster"
 
@@ -47,9 +37,9 @@ resource "aws_ecs_task_definition" "backend_core" {
         }
       }
       secrets = [
-        for name, secret in data.aws_secretsmanager_secret.core : {
+        for name, arn in var.core_task_secrets : {
           name      = name
-          valueFrom = secret.arn
+          valueFrom = arn
         }
       ]
     }
@@ -125,9 +115,9 @@ resource "aws_ecs_task_definition" "backend_integrations" {
         }
       }
       secrets = [
-        for name, secret in data.aws_secretsmanager_secret.integrations : {
+        for name, arn in var.integrations_task_secrets : {
           name      = name
-          valueFrom = secret.arn
+          valueFrom = arn
         }
       ]
     }

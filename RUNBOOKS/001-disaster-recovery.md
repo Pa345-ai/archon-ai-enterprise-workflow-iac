@@ -1,54 +1,40 @@
 # Runbook: Disaster Recovery (DR)
 
-This runbook provides procedures for responding to a disaster scenario, focusing on the failover of the RDS database and the verification of data integrity.
+This runbook provides procedures for responding to a disaster scenario, focusing on the failover of the RDS database.
 
 **Scenario:** The primary RDS database instance has become unavailable due to an Availability Zone (AZ) failure.
 
 ---
 
-### 1. Verify RDS Automatic Failover
+### 1. RDS Multi-AZ Failover
 
-**Objective:** Confirm that the RDS Multi-AZ failover has occurred and the standby replica has been promoted to the new primary.
-
-**Procedure:**
-
-1.  **Navigate to the AWS RDS Console.**
-2.  **Select the database instance** for the affected environment.
-3.  **Go to the "Logs & events" tab.**
-4.  **Look for a recent event** with the description "DB instance failover completed". This event confirms that RDS has automatically handled the failover.
-5.  **Check the "Configuration" tab.** Verify that the "Availability zone" of the instance is now different from the original primary AZ.
-6.  **Check Application Health:** Monitor the application's health checks. After a brief downtime (typically 1-2 minutes) while the DNS endpoint updates, the application should automatically reconnect to the newly promoted primary and resume normal operation.
-
-**Expected Outcome:** The database is available and serving connections from the new AZ. The application has recovered without manual intervention.
-
----
-
-### 2. S3 Data Integrity and Restoration (If Necessary)
-
-**Objective:** Ensure that data in S3 buckets (e.g., ALB access logs) is durable and can be restored if needed.
-
-**Context:** S3 is designed for 99.999999999% (11 9's) of durability and automatically stores your data across multiple AZs. Data loss is extremely unlikely. This procedure is for a worst-case scenario where objects are accidentally deleted or corrupted.
-
-**Procedure for Object-Level Recovery (if versioning is enabled):**
-
-1.  **Navigate to the S3 Console.**
-2.  **Select the relevant bucket** (e.g., the access logs bucket).
-3.  **Use the "List versions" toggle** to view all versions of the objects.
-4.  **Find the object and version** you wish to restore.
-5.  **Select the previous version** and choose "Actions" -> "Restore".
-
-**Note:** The S3 buckets in this baseline do not have versioning enabled by default to control costs. It is highly recommended to enable versioning on any critical S3 buckets as part of the buyer's standard operating procedures.
+*   **Trigger:** An AWS alarm indicating the primary RDS instance is unreachable, or a major AZ-wide service disruption reported on the AWS Health Dashboard.
+*   **Owner:** This process is **fully automated by AWS**. The on-call engineer's role is to monitor and verify the process, not to initiate it.
+*   **Step-by-Step Actions:**
+    1.  **Monitor AWS Health Dashboard:** Keep track of the official status of the AWS services in the affected region.
+    2.  **Monitor Application Metrics:** Observe application health checks and error rates. Expect a brief period of database connection errors.
+    3.  **Await Automated Failover:** No manual intervention is required. RDS will automatically detect the failure and promote the standby replica. This process typically takes 1-2 minutes.
+*   **Verification Steps:**
+    1.  **Verify RDS Event:** Navigate to the AWS RDS Console -> Select the database -> "Logs & events" tab. Confirm that a "DB instance failover completed" event has been logged.
+    2.  **Verify New AZ:** On the "Configuration" tab, confirm that the "Availability zone" of the instance has changed.
+    3.  **Verify Application Recovery:** Check the application's health endpoint. The application should recover automatically as the database DNS endpoint resolves to the new primary instance.
+    4.  **Verify Connectivity:** Manually test the application's core functionality to ensure database connectivity is fully restored.
 
 ---
 
-### 3. Post-Incident Review
+### 2. Post-Incident Review
 
-**Objective:** Analyze the incident and improve the response process.
+*   **Trigger:** The resolution of any disaster recovery incident.
+*   **Owner:** Lead Operations Engineer / Site Reliability Engineer (SRE).
+*   **Step-by-Step Actions:**
+    1.  **Convene Post-Mortem:** Schedule a meeting with all relevant engineering and operations teams.
+    2.  **Document Timeline:** Create a detailed timeline of the incident, from initial alert to full resolution.
+    3.  **Analyze Root Cause:** Identify the specific cause of the failure (e.g., AWS hardware failure, network issue).
+    4.  **Assess Impact:** Quantify the impact on the application and business operations (e.g., duration of downtime, number of failed transactions).
+    5.  **Identify Action Items:** Define concrete steps to improve monitoring, alerting, or the architecture to reduce the likelihood or impact of future incidents.
+*   **Verification Steps:**
+    1.  **Verify Post-Mortem Document:** Ensure a post-mortem document is created and shared with all stakeholders.
+    2.  **Verify Action Item Tracking:** Ensure all identified action items are entered into a tracking system (e.g., Jira, Asana) and assigned to an owner.
 
-**Procedure:**
-
-1.  **Document the timeline** of the incident, from detection to resolution.
-2.  **Analyze the root cause.** In this scenario, it was an AZ failure.
-3.  **Evaluate the performance** of the automated recovery systems. Was the failover time within the expected range?
-4.  **Identify any areas for improvement** in monitoring, alerting, or the runbook itself.
-5.  **Update documentation** and share the findings with the team.
+---
+*This is a controlled document. Any changes must be reviewed and approved via a pull request.*
