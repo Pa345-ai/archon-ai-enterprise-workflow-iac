@@ -1,29 +1,15 @@
-variable "environment" {
-  description = "The deployment environment."
-  type        = string
-}
-
-variable "application_name" {
-  description = "The name of the application."
-  type        = string
-}
-
-variable "owner" {
-  description = "The owner of the application."
-  type        = string
-}
-
-variable "cost_center" {
-  description = "The cost center for the application."
-  type        = string
-}
-
-variable "data_classification" {
-  description = "The data classification of the application."
-  type        = string
+variable "common_tags" {
+  description = "A map of key-value pairs to apply as tags to the WAF Web ACL. This is essential for cost allocation, automation, and auditing."
+  type        = map(string)
+  default     = {}
 }
 
 variable "alb_arn" {
-  description = "The ARN of the ALB to associate the WAF with."
+  description = "The ARN of the Application Load Balancer to be protected by this WAF Web ACL. This must be a valid ALB ARN."
   type        = string
+
+  validation {
+    condition     = can(regex("^arn:aws:elasticloadbalancing:[a-z0-9-]+:[0-9]{12}:loadbalancer/app/.*$", var.alb_arn))
+    error_message = "The alb_arn must be a valid Application Load Balancer ARN."
+  }
 }
