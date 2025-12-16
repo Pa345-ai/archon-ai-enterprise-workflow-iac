@@ -1,19 +1,14 @@
 resource "aws_kms_key" "main" {
-  description             = "KMS key for ${var.application_name} in ${var.environment}"
+  description             = "KMS key for ${var.common_tags["Application"]} in ${var.common_tags["Environment"]}"
   deletion_window_in_days = 30
   enable_key_rotation     = true
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-kms-key"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-kms-key"
+  })
 }
 
 resource "aws_kms_alias" "main" {
-  name          = "alias/${var.environment}/${var.application_name}"
+  name          = "alias/${var.common_tags["Environment"]}/${var.common_tags["Application"]}"
   target_key_id = aws_kms_key.main.key_id
 }

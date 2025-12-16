@@ -1,17 +1,12 @@
 resource "aws_secretsmanager_secret" "jwt_secret" {
-  name                    = "${var.environment}-${var.application_name}-jwt_secret"
-  description             = "JWT secret for ${var.application_name} in ${var.environment}"
+  name                    = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-jwt_secret"
+  description             = "JWT secret for ${var.common_tags["Application"]} in ${var.common_tags["Environment"]}"
   kms_key_id              = var.kms_key_id
   recovery_window_in_days = 7
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-jwt_secret"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-jwt_secret"
+  })
 }
 
 resource "random_string" "jwt_secret" {
@@ -25,19 +20,14 @@ resource "aws_secretsmanager_secret_version" "jwt_secret" {
 }
 
 resource "aws_secretsmanager_secret" "openai_api_key" {
-  name                    = "${var.environment}-${var.application_name}-openai_api_key"
-  description             = "OpenAI API key for ${var.application_name} in ${var.environment}"
+  name                    = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-openai_api_key"
+  description             = "OpenAI API key for ${var.common_tags["Application"]} in ${var.common_tags["Environment"]}"
   kms_key_id              = var.kms_key_id
   recovery_window_in_days = 0
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-openai_api_key"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-openai_api_key"
+  })
 }
 
 resource "aws_secretsmanager_secret_version" "openai_api_key" {
@@ -46,19 +36,14 @@ resource "aws_secretsmanager_secret_version" "openai_api_key" {
 }
 
 resource "aws_secretsmanager_secret" "slack_token" {
-  name                    = "${var.environment}-${var.application_name}-slack_token"
-  description             = "Slack token for ${var.application_name} in ${var.environment}"
+  name                    = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-slack_token"
+  description             = "Slack token for ${var.common_tags["Application"]} in ${var.common_tags["Environment"]}"
   kms_key_id              = var.kms_key_id
   recovery_window_in_days = 0
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-slack_token"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-slack_token"
+  })
 }
 
 resource "aws_secretsmanager_secret_version" "slack_token" {

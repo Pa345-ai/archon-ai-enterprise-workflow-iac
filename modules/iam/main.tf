@@ -1,5 +1,5 @@
 resource "aws_iam_role" "ecs_execution_role" {
-  name = "${var.environment}-${var.application_name}-ecs-execution-role"
+  name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-ecs-execution-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -14,14 +14,9 @@ resource "aws_iam_role" "ecs_execution_role" {
     ]
   })
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-ecs-execution-role"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-ecs-execution-role"
+  })
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
@@ -30,7 +25,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
 }
 
 resource "aws_iam_role" "ecs_task_core_role" {
-  name = "${var.environment}-${var.application_name}-ecs-task-core-role"
+  name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-ecs-task-core-role"
   assume_role_policy = jsonencode({
     Version   = "2012-10-17",
     Statement = [{
@@ -42,18 +37,13 @@ resource "aws_iam_role" "ecs_task_core_role" {
     }]
   })
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-ecs-task-core-role"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-ecs-task-core-role"
+  })
 }
 
 resource "aws_iam_policy" "ecs_task_core_secrets" {
-  name = "${var.environment}-${var.application_name}-ecs-task-core-secrets"
+  name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-ecs-task-core-secrets"
   policy = jsonencode({
     Version   = "2012-10-17",
     Statement = [
@@ -77,7 +67,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_core_secrets" {
 }
 
 resource "aws_iam_role" "ecs_task_integrations_role" {
-  name = "${var.environment}-${var.application_name}-ecs-task-integrations-role"
+  name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-ecs-task-integrations-role"
   assume_role_policy = jsonencode({
     Version   = "2012-10-17",
     Statement = [{
@@ -89,18 +79,13 @@ resource "aws_iam_role" "ecs_task_integrations_role" {
     }]
   })
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-ecs-task-integrations-role"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-ecs-task-integrations-role"
+  })
 }
 
 resource "aws_iam_policy" "ecs_task_integrations_secrets" {
-  name = "${var.environment}-${var.application_name}-ecs-task-integrations-secrets"
+  name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-ecs-task-integrations-secrets"
   policy = jsonencode({
     Version   = "2012-10-17",
     Statement = [

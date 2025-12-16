@@ -5,14 +5,9 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
   enable_dns_hostnames = true
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-vpc"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-vpc"
+  })
 }
 
 resource "aws_subnet" "public" {
@@ -22,14 +17,9 @@ resource "aws_subnet" "public" {
   availability_zone       = data.aws_availability_zones.available.names[count.index]
   map_public_ip_on_launch = true
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-public-subnet-${count.index + 1}"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-public-subnet-${count.index + 1}"
+  })
 }
 
 resource "aws_subnet" "private" {
@@ -38,41 +28,26 @@ resource "aws_subnet" "private" {
   cidr_block        = var.private_subnet_cidrs[count.index]
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-private-subnet-${count.index + 1}"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-private-subnet-${count.index + 1}"
+  })
 }
 
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-igw"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-igw"
+  })
 }
 
 resource "aws_eip" "nat" {
   count  = length(var.public_subnet_cidrs)
   domain = "vpc"
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-nat-eip-${count.index + 1}"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-nat-eip-${count.index + 1}"
+  })
 }
 
 resource "aws_nat_gateway" "main" {
@@ -81,14 +56,9 @@ resource "aws_nat_gateway" "main" {
   subnet_id     = aws_subnet.public[count.index].id
   depends_on    = [aws_internet_gateway.main]
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-nat-gw-${count.index + 1}"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-nat-gw-${count.index + 1}"
+  })
 }
 
 resource "aws_route_table" "public" {
@@ -99,14 +69,9 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.main.id
   }
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-public-rt"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-public-rt"
+  })
 }
 
 resource "aws_route_table_association" "public" {
@@ -124,14 +89,9 @@ resource "aws_route_table" "private" {
     nat_gateway_id = aws_nat_gateway.main[count.index].id
   }
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-private-rt-${count.index + 1}"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-private-rt-${count.index + 1}"
+  })
 }
 
 resource "aws_route_table_association" "private" {
@@ -146,12 +106,7 @@ resource "aws_vpc_endpoint" "s3" {
   vpc_endpoint_type = "Gateway"
   route_table_ids   = aws_route_table.private[*].id
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-s3-endpoint"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-s3-endpoint"
+  })
 }

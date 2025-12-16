@@ -1,5 +1,5 @@
 resource "aws_security_group" "alb" {
-  name   = "${var.environment}-${var.application_name}-alb-sg"
+  name   = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-alb-sg"
   vpc_id = var.vpc_id
 
   ingress {
@@ -23,18 +23,13 @@ resource "aws_security_group" "alb" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-alb-sg"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-alb-sg"
+  })
 }
 
 resource "aws_security_group" "ecs" {
-  name   = "${var.environment}-${var.application_name}-ecs-sg"
+  name   = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-ecs-sg"
   vpc_id = var.vpc_id
 
   ingress {
@@ -58,18 +53,13 @@ resource "aws_security_group" "ecs" {
     cidr_blocks     = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-ecs-sg"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-ecs-sg"
+  })
 }
 
 resource "aws_security_group" "db" {
-  name   = "${var.environment}-${var.application_name}-db-sg"
+  name   = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-db-sg"
   vpc_id = var.vpc_id
 
   ingress {
@@ -79,18 +69,13 @@ resource "aws_security_group" "db" {
     security_groups = [aws_security_group.ecs.id]
   }
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-db-sg"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-db-sg"
+  })
 }
 
 resource "aws_security_group" "secretsmanager_endpoint" {
-  name   = "${var.environment}-${var.application_name}-secretsmanager-endpoint-sg"
+  name   = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-secretsmanager-endpoint-sg"
   vpc_id = var.vpc_id
 
   ingress {
@@ -100,14 +85,9 @@ resource "aws_security_group" "secretsmanager_endpoint" {
     security_groups = [aws_security_group.ecs.id]
   }
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-secretsmanager-endpoint-sg"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-secretsmanager-endpoint-sg"
+  })
 }
 
 resource "aws_vpc_endpoint" "secretsmanager" {
@@ -121,12 +101,7 @@ resource "aws_vpc_endpoint" "secretsmanager" {
     aws_security_group.secretsmanager_endpoint.id,
   ]
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-secretsmanager-endpoint"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-secretsmanager-endpoint"
+  })
 }

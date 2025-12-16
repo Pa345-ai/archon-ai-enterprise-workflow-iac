@@ -1,33 +1,28 @@
 data "aws_secretsmanager_secret" "core" {
   for_each = toset(var.core_task_secret_names)
-  name     = "${var.environment}-${var.application_name}-${each.key}"
+  name     = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-${each.key}"
 }
 
 data "aws_secretsmanager_secret" "integrations" {
   for_each = toset(var.integrations_task_secret_names)
-  name     = "${var.environment}-${var.application_name}-${each.key}"
+  name     = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-${each.key}"
 }
 
 resource "aws_ecs_cluster" "main" {
-  name = "${var.environment}-${var.application_name}-ecs-cluster"
+  name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-ecs-cluster"
 
   setting {
     name  = "containerInsights"
     value = "enabled"
   }
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-ecs-cluster"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-ecs-cluster"
+  })
 }
 
 resource "aws_ecs_task_definition" "backend_core" {
-  family                   = "${var.environment}-${var.application_name}-backend-core-task"
+  family                   = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-backend-core-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.fargate_cpu
@@ -62,7 +57,7 @@ resource "aws_ecs_task_definition" "backend_core" {
 }
 
 resource "aws_ecs_service" "backend_core" {
-  name            = "${var.environment}-${var.application_name}-backend-core-service"
+  name            = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-backend-core-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.backend_core.arn
   desired_count   = 2
@@ -89,7 +84,7 @@ resource "aws_appautoscaling_target" "ecs_core_target" {
 }
 
 resource "aws_appautoscaling_policy" "ecs_core_cpu" {
-  name               = "${var.environment}-${var.application_name}-ecs-core-cpu-scaling"
+  name               = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-ecs-core-cpu-scaling"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.ecs_core_target.resource_id
   scalable_dimension = aws_appautoscaling_target.ecs_core_target.scalable_dimension
@@ -105,7 +100,7 @@ resource "aws_appautoscaling_policy" "ecs_core_cpu" {
 }
 
 resource "aws_ecs_task_definition" "backend_integrations" {
-  family                   = "${var.environment}-${var.application_name}-backend-integrations-task"
+  family                   = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-backend-integrations-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.fargate_cpu
@@ -140,7 +135,7 @@ resource "aws_ecs_task_definition" "backend_integrations" {
 }
 
 resource "aws_ecs_service" "backend_integrations" {
-  name            = "${var.environment}-${var.application_name}-backend-integrations-service"
+  name            = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-backend-integrations-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.backend_integrations.arn
   desired_count   = 1
@@ -167,7 +162,7 @@ resource "aws_appautoscaling_target" "ecs_integrations_target" {
 }
 
 resource "aws_appautoscaling_policy" "ecs_integrations_cpu" {
-  name               = "${var.environment}-${var.application_name}-ecs-integrations-cpu-scaling"
+  name               = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-ecs-integrations-cpu-scaling"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.ecs_integrations_target.resource_id
   scalable_dimension = aws_appautoscaling_target.ecs_integrations_target.scalable_dimension

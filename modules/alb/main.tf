@@ -1,5 +1,5 @@
 resource "aws_lb" "main" {
-  name               = "${var.environment}-${var.application_name}-alb"
+  name               = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [var.alb_security_group_id]
@@ -12,18 +12,13 @@ resource "aws_lb" "main" {
     enabled = true
   }
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-alb"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-alb"
+  })
 }
 
 resource "aws_lb_target_group" "main" {
-  name        = "${var.environment}-${var.application_name}-tg"
+  name        = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-tg"
   port        = 8000
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -38,18 +33,13 @@ resource "aws_lb_target_group" "main" {
     matcher             = "200-399"
   }
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-tg"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-tg"
+  })
 }
 
 resource "aws_lb_target_group" "integrations" {
-  name        = "${var.environment}-${var.application_name}-integrations-tg"
+  name        = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-integrations-tg"
   port        = 8000
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -64,14 +54,9 @@ resource "aws_lb_target_group" "integrations" {
     matcher             = "200-399"
   }
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-integrations-tg"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-integrations-tg"
+  })
 }
 
 resource "aws_lb_listener" "http" {

@@ -1,5 +1,5 @@
 resource "aws_wafv2_web_acl" "main" {
-  name  = "${var.environment}-${var.application_name}-waf"
+  name  = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-waf"
   scope = "REGIONAL"
 
   default_action {
@@ -52,18 +52,13 @@ resource "aws_wafv2_web_acl" "main" {
 
   visibility_config {
     cloudwatch_metrics_enabled = true
-    metric_name                = "${var.environment}-${var.application_name}-waf"
+    metric_name                = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-waf"
     sampled_requests_enabled   = true
   }
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-waf"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-waf"
+  })
 }
 
 resource "aws_wafv2_web_acl_association" "main" {

@@ -1,33 +1,23 @@
 resource "aws_cloudwatch_log_group" "ecs_logs" {
-  name              = "/ecs/${var.environment}/${var.application_name}"
+  name              = "/ecs/${var.common_tags["Environment"]}/${var.common_tags["Application"]}"
   retention_in_days = 365
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-ecs-logs"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-ecs-logs"
+  })
 }
 
 resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
-  name              = "/aws/vpc/flowlogs/${var.environment}-${var.application_name}"
+  name              = "/aws/vpc/flowlogs/${var.common_tags["Environment"]}-${var.common_tags["Application"]}"
   retention_in_days = 90
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-vpc-flow-logs"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-vpc-flow-logs"
+  })
 }
 
 resource "aws_iam_role" "vpc_flow_logs" {
-  name = "${var.environment}-${var.application_name}-vpc-flow-logs-role"
+  name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-vpc-flow-logs-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -42,14 +32,9 @@ resource "aws_iam_role" "vpc_flow_logs" {
     ]
   })
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-vpc-flow-logs-role"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-vpc-flow-logs-role"
+  })
 }
 
 resource "aws_iam_role_policy_attachment" "vpc_flow_logs_policy" {
@@ -65,16 +50,11 @@ resource "aws_flow_log" "main" {
 }
 
 resource "aws_s3_bucket" "access_logs" {
-  bucket = "${var.environment}-${var.application_name}-alb-access-logs"
+  bucket = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-alb-access-logs"
 
-  tags = {
-    Name               = "${var.environment}-${var.application_name}-alb-access-logs"
-    Environment        = var.environment
-    Application        = var.application_name
-    Owner              = var.owner
-    CostCenter         = var.cost_center
-    DataClassification = var.data_classification
-  }
+  tags = merge(var.common_tags, {
+    Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-alb-access-logs"
+  })
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "access_logs" {
