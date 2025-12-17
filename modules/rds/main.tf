@@ -32,13 +32,9 @@ resource "aws_db_instance" "main" {
   storage_encrypted    = true
   kms_key_id           = var.kms_key_id
   skip_final_snapshot  = false
-  deletion_protection  = var.prevent_destroy
+  deletion_protection  = var.enable_deletion_protection
   manage_master_user_password = true
   master_user_secret_kms_key_id = var.kms_key_id
-
-  lifecycle {
-    prevent_destroy = var.prevent_destroy
-  }
 
   tags = merge(var.common_tags, {
     Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-db"

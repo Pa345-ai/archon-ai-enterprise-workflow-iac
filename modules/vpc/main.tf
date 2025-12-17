@@ -47,7 +47,6 @@ resource "aws_internet_gateway" "main" {
 
 resource "aws_eip" "nat" {
   count  = length(var.public_subnet_cidrs)
-  domain = "vpc"
 
   tags = merge(var.common_tags, {
     Name = "${var.common_tags["Environment"]}-${var.common_tags["Application"]}-nat-eip-${count.index + 1}"

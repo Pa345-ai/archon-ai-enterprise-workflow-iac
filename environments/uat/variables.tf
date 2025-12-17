@@ -4,6 +4,12 @@ variable "aws_region" {
   default     = "ap-southeast-2"
 }
 
+variable "common_tags" {
+  description = "Common tags to be applied to all resources for cost tracking, compliance, and automation."
+  type        = map(string)
+  default     = {}
+}
+
 variable "environment" {
   description = "The deployment environment."
   type        = string
