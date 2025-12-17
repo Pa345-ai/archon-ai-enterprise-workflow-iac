@@ -39,8 +39,8 @@ variable "db_name" {
   type        = string
 }
 
-variable "prevent_destroy" {
-  description = "A boolean flag that, when set to true, enables deletion protection and the 'prevent_destroy' lifecycle block on the RDS instance. This is a critical safety feature for production environments."
+variable "enable_deletion_protection" {
+  description = "A boolean flag that, when set to true, enables deletion protection on the RDS instance. This is a critical safety feature for production environments."
   type        = bool
   default     = false
 }
